@@ -1,4 +1,5 @@
 # ethereum-contracts
+Disclaimer: You are using this contract on your own responsibility. I can help, but I don't take any responsibility if anything won't work during the mint.
 
 Hello everyone welcomy to my github. I created low gas optimized ERC721 contract for Ethereum network. Here you can find little tutorial how to use it.
 
