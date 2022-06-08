@@ -25,7 +25,7 @@ contract SampleNFTLowGas is ERC721A, Ownable, ReentrancyGuard { //Change contrac
   uint256 public maxMintAmountPerTxPhase1 = 2; //decide how many NFT's you want to mint with cost1
   uint256 public maxMintAmountPerTxPhase2 = 8; //decide how many NFT's you want to mint with cost2
   uint256 public maxLimitPerWallet = 10; //decide how many NFT's you want to let customers mint per wallet
-  bool public sale = false; //if false, then mint is paused. If true - mint is started
+  bool public sale = true; //if false, then mint is paused. If true - mint is started
   bool public revealed = true; //when you want instant reveal, leave true. 
 
 // ================== Variables End =======================  
@@ -44,26 +44,31 @@ contract SampleNFTLowGas is ERC721A, Ownable, ReentrancyGuard { //Change contrac
 
 // ================== Mint Functions Start =======================
 
-  function UpdateCost(uint256 _supply) internal view returns  (uint256 _cost) {
+  function UpdateCost(uint256 _mintAmount) internal view returns  (uint256 _cost) {
 
-      if (_supply < supplyPhase1) {
+         if (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase1 && totalSupply() < supplyPhase1) {
           return cost1;
-        }
-      if (_supply < supplyLimit){
+          }
+         if (balanceOf(msg.sender) + _mintAmount > maxMintAmountPerTxPhase1){
           return cost2;
         }
   }
   
   function Mint(uint256 _mintAmount) public payable {
-    //Dynamic Price
-    uint256 supply = totalSupply();
+
     //Normal requirements 
     require(sale, 'The Sale is paused!');
     require(_mintAmount > 0 && _mintAmount <= maxLimitPerWallet, 'Invalid mint amount!');
     require(totalSupply() + _mintAmount <= supplyLimit, 'Max supply exceeded!');
     require(balanceOf(msg.sender) + _mintAmount <= maxLimitPerWallet, 'Max mint per wallet exceeded!');
-    require(msg.value >= UpdateCost(supply) * _mintAmount, 'Insufficient funds!');
-     
+    if(balanceOf(msg.sender) == 0){
+    require(msg.value >= UpdateCost(_mintAmount) * (_mintAmount-maxMintAmountPerTxPhase1), 'Insufficient funds!');
+    }else{
+    require(msg.value >= UpdateCost(_mintAmount) * _mintAmount, 'Insufficient funds!');
+    }
+    require((balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase1 && totalSupply() < supplyPhase1) || 
+    (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase2 && totalSupply() <= supplyLimit), 'Max  mint amount exceeded!');
+
     //Mint
      _safeMint(_msgSender(), _mintAmount);
   }  
