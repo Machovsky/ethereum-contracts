@@ -67,7 +67,7 @@ contract SampleNFTLowGas is ERC721A, Ownable, ReentrancyGuard { //Change contrac
     require(msg.value >= UpdateCost(_mintAmount) * _mintAmount, 'Insufficient funds!');
     }
     require((balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase1 && totalSupply() < supplyPhase1) || 
-    (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase2 && totalSupply() <= supplyLimit), 'Max  mint amount exceeded!');
+    (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase2 && totalSupply() <= supplyPhase1), 'Max  mint amount exceeded!');
 
     //Mint
      _safeMint(_msgSender(), _mintAmount);
