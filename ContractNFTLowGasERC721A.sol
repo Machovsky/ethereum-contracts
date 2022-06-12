@@ -9,29 +9,28 @@ import 'erc721a/contracts/ERC721A.sol';
 
 pragma solidity >=0.8.13 <0.9.0;
 
-contract SampleNFTLowGas is ERC721A, Ownable, ReentrancyGuard { //Change contract name from SampleNFTLowGas
+contract NFTcontractName is ERC721A, Ownable, ReentrancyGuard { //Change contract name from SampleNFTLowGas
 
   using Strings for uint256;
 
 // ================== Variables Start =======================
-    
+
   string public uri; //you don't change this
-  string public hiddenMetadataUri; //you don't change this
   string public uriSuffix = ".json"; //you don't change this
-  uint256 public cost1 = 0 ether; //here you change phase 1 cost (for example first 1k for free, then 0.003eth each nft)
-  uint256 public cost2 = 0.003 ether; //here you change phase 2 cost
-  uint256 public supplyPhase1 = 1000; //change to your NFT supply for phase1
-  uint256 public supplyLimit = 3333; //change it to your total NFT supply
-  uint256 public maxMintAmountPerTxPhase1 = 2; //decide how many NFT's you want to mint with cost1
-  uint256 public maxMintAmountPerTxPhase2 = 8; //decide how many NFT's you want to mint with cost2
-  uint256 public maxLimitPerWallet = 10; //decide how many NFT's you want to let customers mint per wallet
-  bool public sale = true; //if false, then mint is paused. If true - mint is started
+  string public hiddenMetadataUri; //you don't change this
+  uint256 public cost1 = 0 ether; //here you change phase 1 cost (for example first 1k for free, then 0.004 eth each nft)
+  uint256 public cost2 = 0.004 ether; //here you change phase 2 cost
+  uint256 public supplyLimitPhase1 = 1111;  //change to your NFT supply for phase1
+  uint256 public supplyLimit = 3333;  //change it to your total NFT supply
+  uint256 public maxMintAmountPerTxPhase1 = 1; //decide how many NFT's you want to mint with cost1
+  uint256 public maxMintAmountPerTxPhase2 = 5; //decide how many NFT's you want to mint with cost2
+  uint256 public maxLimitPerWallet = 20; //decide how many NFT's you want to let customers mint per wallet
+  bool public sale = false;  //if false, then mint is paused. If true - mint is started
   bool public revealed = true; //when you want instant reveal, leave true. 
 
-// ================== Variables End =======================  
+// ================== Variables End =======================
 
 // ================== Constructor Start =======================
-
   constructor(
     string memory _uri,
     string memory _hiddenMetadataUri
@@ -40,36 +39,26 @@ contract SampleNFTLowGas is ERC721A, Ownable, ReentrancyGuard { //Change contrac
     setHiddenMetadataUri(_hiddenMetadataUri);
   }
 
-// ================== Constructor End =======================
-
 // ================== Mint Functions Start =======================
 
-  function UpdateCost(uint256 _mintAmount) internal view returns  (uint256 _cost) {
+   function UpdateCost(uint256 _mintAmount) internal view returns  (uint256 _cost) {
 
-         if (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase1 && totalSupply() < supplyPhase1) {
-          return cost1;
-          }
-         if (balanceOf(msg.sender) + _mintAmount > maxMintAmountPerTxPhase1){
-          return cost2;
-        }
+    if (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase1 && totalSupply() < supplyLimitPhase1) {
+        return cost1;
+    }
+    if (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase2){
+        return cost2;
+    }
   }
   
   function Mint(uint256 _mintAmount) public payable {
-
-    //Normal requirements 
+    // Normal requirements 
     require(sale, 'The Sale is paused!');
-    require(_mintAmount > 0 && _mintAmount <= maxLimitPerWallet, 'Invalid mint amount!');
+    require(_mintAmount > 0 && _mintAmount <= maxMintAmountPerTxPhase2, 'Invalid mint amount!');
     require(totalSupply() + _mintAmount <= supplyLimit, 'Max supply exceeded!');
     require(balanceOf(msg.sender) + _mintAmount <= maxLimitPerWallet, 'Max mint per wallet exceeded!');
-    if(balanceOf(msg.sender) == 0){
-    require(msg.value >= UpdateCost(_mintAmount) * (_mintAmount-maxMintAmountPerTxPhase1), 'Insufficient funds!');
-    }else{
     require(msg.value >= UpdateCost(_mintAmount) * _mintAmount, 'Insufficient funds!');
-    }
-    require((balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase1 && totalSupply() < supplyPhase1) || 
-    (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase2 && totalSupply() <= supplyPhase1), 'Max  mint amount exceeded!');
-
-    //Mint
+     
      _safeMint(_msgSender(), _mintAmount);
   }  
 
@@ -77,10 +66,6 @@ contract SampleNFTLowGas is ERC721A, Ownable, ReentrancyGuard { //Change contrac
     require(totalSupply() + _mintAmount <= supplyLimit, 'Max supply exceeded!');
     _safeMint(_receiver, _mintAmount);
   }
-
-// ================== Mint Functions End =======================  
-
-// ================== Set Functions Start =======================
 
   function setRevealed(bool _state) public onlyOwner {
     revealed = _state;
@@ -91,7 +76,7 @@ contract SampleNFTLowGas is ERC721A, Ownable, ReentrancyGuard { //Change contrac
   }
 
   function setHiddenMetadataUri(string memory _hiddenMetadataUri) public onlyOwner {
-  hiddenMetadataUri = _hiddenMetadataUri;
+    hiddenMetadataUri = _hiddenMetadataUri;
   }
 
   function setUriSuffix(string memory _uriSuffix) public onlyOwner {
@@ -132,15 +117,15 @@ contract SampleNFTLowGas is ERC721A, Ownable, ReentrancyGuard { //Change contrac
     (bool os, ) = payable(owner()).call{value: address(this).balance}("");
     require(os);
   }
-
+ 
   function price(uint256 _mintAmount) public view returns (uint256){
-         if (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase1 && totalSupply() < supplyPhase1) {
+         if (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase1 && totalSupply() <supplyLimitPhase1) {
           return cost1;
           }
-         if (balanceOf(msg.sender) + _mintAmount <= maxLimitPerWallet && totalSupply() >= supplyPhase1){
+         if (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase2 && totalSupply() < supplyLimit){
           return cost2;
         }
-      return cost2;
+        return cost2;
   }
 
 function tokensOfOwner(address owner) external view returns (uint256[] memory) {
@@ -185,7 +170,4 @@ function tokensOfOwner(address owner) external view returns (uint256[] memory) {
   function _baseURI() internal view virtual override returns (string memory) {
     return uri;
   }
-
-// ================== Read Functions End =======================  
-
 }
