@@ -4,7 +4,7 @@ Hello everyone welcomy to my github. I created low gas optimized ERC721 contract
 If any help will be needed, feel free to ask me on discord **arczi.eth#7777**
 
 # What are this contracts about?
-NFTLowGas.sol - ERC721A optimized contract with lower gas fees. This contract will let you create mint which has:
+ContractNFTLowGasERC721A.sol - ERC721A optimized contract with lower gas fees. This contract will let you create mint which has:
 2 stages - first for example free mint, second with paid mints
 
 To give you better example - you have 5000 NFT collection. With this contract you can make free mint for first 2000 NFTs and then 3000 paid mints. 
