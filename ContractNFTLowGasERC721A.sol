@@ -46,7 +46,7 @@ contract NFTcontractName is ERC721A, Ownable, ReentrancyGuard { //Change contrac
     if (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase1 && totalSupply() < supplyLimitPhase1) {
         return cost1;
     }
-    if (balanceOf(msg.sender) + _mintAmount <= maxMintAmountPerTxPhase2){
+    if (balanceOf(msg.sender) + _mintAmount <= supplyLimit){
         return cost2;
     }
   }
